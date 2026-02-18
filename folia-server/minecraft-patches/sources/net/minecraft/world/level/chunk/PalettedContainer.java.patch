@@ -1,0 +1,70 @@
+--- a/net/minecraft/world/level/chunk/PalettedContainer.java
++++ b/net/minecraft/world/level/chunk/PalettedContainer.java
+@@ -6,6 +_,8 @@
+ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+ import it.unimi.dsi.fastutil.ints.IntArraySet;
+ import it.unimi.dsi.fastutil.ints.IntSet;
++
++import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.List;
+ import java.util.Optional;
+@@ -304,13 +_,14 @@
+     }
+ 
+     private static <T> DataResult<PalettedContainer<T>> unpack(
+-        IdMap<T> registry, PalettedContainer.Strategy strategy, PalettedContainerRO.PackedData<T> packedData, T defaultValue, T @org.jetbrains.annotations.Nullable [] presetValues // Paper - Anti-Xray - Add preset values
++            IdMap<T> registry, PalettedContainer.Strategy strategy, PalettedContainerRO.PackedData<T> packedData, T defaultValue, T @org.jetbrains.annotations.Nullable [] presetValues // Paper - Anti-Xray - Add preset values
+     ) {
+         List<T> list = packedData.paletteEntries();
+         int size = strategy.size();
+         int i = strategy.calculateBitsForSerialization(registry, list.size());
+         PalettedContainer.Configuration<T> configuration = strategy.getConfiguration(registry, i);
+         BitStorage bitStorage;
++
+         if (i == 0) {
+             bitStorage = new ZeroBitStorage(size);
+         } else {
+@@ -336,8 +_,40 @@
+                 return DataResult.error(() -> "Failed to read PalettedContainer: " + var13.getMessage());
+             }
+         }
+-
+-        return DataResult.success(new PalettedContainer<>(registry, strategy, configuration, bitStorage, list, defaultValue, presetValues)); // Paper - Anti-Xray - Add preset values
++        // TwinkNet start - Ensure air is in the 0 index of the palette.
++        List<T> newList = new ArrayList<>(packedData.paletteEntries());
++        BitStorage newBitStorage = bitStorage.copy();
++        int indexOfAirState = newList.indexOf(defaultValue);
++        boolean success = true;
++        if (indexOfAirState == 0) {
++            // there's nothing to change.
++        } else if (indexOfAirState > 0) {
++            // just swap the index of air to 0 and update the bitstorage to reflect this change.
++            T elementAtZero = newList.getFirst();
++            newList.set(0, defaultValue);
++            newList.set(indexOfAirState, elementAtZero);
++
++            for (int j = 0; j < size; j++) {
++                int p = newBitStorage.get(j);
++                if (p == 0) newBitStorage.set(j, indexOfAirState);
++                else if (p == indexOfAirState) newBitStorage.set(j, 0);
++            }
++        } else {
++            // create a dummy air entry
++            newList.addFirst(defaultValue);
++            // ensure we're not about to completely break the game
++            int newBits = strategy.calculateBitsForSerialization(registry, newList.size());
++            if (newBits > configuration.bits()) {
++                success = false; // just give up if it needs to be resized.
++            } else {
++                for (int j = 0; j < size; j++) {
++                    newBitStorage.set(j, newBitStorage.get(j) + 1);
++                }
++            }
++        }
++
++        return DataResult.success(new PalettedContainer<>(registry, strategy, configuration, success ? newBitStorage : bitStorage, success ? newList : list, defaultValue, presetValues)); // Paper - Anti-Xray - Add preset values
++        // TwinkNet end - Ensure air is in the 0 index of the palette.
+     }
+ 
+     @Override
