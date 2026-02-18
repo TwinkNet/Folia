@@ -240,10 +240,10 @@ index 26207443b1223119c03db478d7e816d9cdf8e618..a89ee24c6aed46af23c5de7ae2234c79
      }
  
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
-index dd2509996bfd08e8c3f9f2be042229eac6d7692d..f77dcf5a42ff34a1624ddf16bcce2abee81194bb 100644
+index 2c5df9baee758a565beb5c2e5f7e2553bdf723b3..0b232b45f8a371c0156544c2c05a5420209df926 100644
 --- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
-@@ -216,7 +216,7 @@ public final class RegionizedPlayerChunkLoader {
+@@ -220,7 +220,7 @@ public final class RegionizedPlayerChunkLoader {
          final PlayerChunkLoaderData loader = ((ChunkSystemServerPlayer)player).moonrise$getChunkLoader();
  
          if (loader == null) {
@@ -252,7 +252,7 @@ index dd2509996bfd08e8c3f9f2be042229eac6d7692d..f77dcf5a42ff34a1624ddf16bcce2abe
          }
  
          loader.remove();
-@@ -304,7 +304,7 @@ public final class RegionizedPlayerChunkLoader {
+@@ -308,7 +308,7 @@ public final class RegionizedPlayerChunkLoader {
      public void tick() {
          TickThread.ensureTickThread("Cannot tick player chunk loader async");
          long currTime = System.nanoTime();

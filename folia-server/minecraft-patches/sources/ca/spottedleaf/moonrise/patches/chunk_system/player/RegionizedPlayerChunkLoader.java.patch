@@ -1,0 +1,31 @@
+--- a/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
++++ b/ca/spottedleaf/moonrise/patches/chunk_system/player/RegionizedPlayerChunkLoader.java
+@@ -37,6 +_,8 @@
+ import net.minecraft.world.level.chunk.LevelChunk;
+ import net.minecraft.world.level.chunk.status.ChunkStatus;
+ import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
++import network.twink.limiter.GlobalChunkSendRateLimiterTracker;
++
+ import java.lang.invoke.VarHandle;
+ import java.util.ArrayDeque;
+ import java.util.concurrent.TimeUnit;
+@@ -55,6 +_,8 @@
+     public static final int LOADED_TICKET_LEVEL = ChunkTaskScheduler.getTicketLevel(ChunkStatus.EMPTY);
+     public static final int TICK_TICKET_LEVEL = ChunkHolderManager.ENTITY_TICKING_TICKET_LEVEL;
+ 
++    public static final GlobalChunkSendRateLimiterTracker globalChunkSendRateLimiterTracker = new GlobalChunkSendRateLimiterTracker();
++
+     public static final class ViewDistanceHolder {
+ 
+         private volatile ViewDistances viewDistances;
+@@ -821,6 +_,10 @@
+             final int maxSendsThisTick = Math.min((int)this.chunkSendLimiter.takeAllocation(time, sendRate, maxSends), this.sendQueue.size());
+             // we do not return sends that we took from the allocation back because we want to limit the max send rate, not target it
+             for (int i = 0; i < maxSendsThisTick; ++i) {
++                if (globalChunkSendRateLimiterTracker.isOverLimit()) {
++                    break;
++                }
++                globalChunkSendRateLimiterTracker.incrementCurrent();
+                 final long pendingSend = this.sendQueue.firstLong();
+                 final int pendingSendX = CoordinateUtils.getChunkX(pendingSend);
+                 final int pendingSendZ = CoordinateUtils.getChunkZ(pendingSend);
