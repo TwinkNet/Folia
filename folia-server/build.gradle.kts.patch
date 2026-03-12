@@ -49,6 +49,13 @@
      implementation("ca.spottedleaf:concurrentutil:0.0.3")
      implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
      implementation("org.jline:jline-terminal-jni:3.27.1") // fall back to jni on java 21
+
+@@ -142,4 +_,4 @@
+     }
+     implementation("io.netty:netty-codec-haproxy:4.1.115.Final") // Add support for proxy protocol
+     implementation("org.apache.logging.log4j:log4j-iostreams:2.24.1")
+-    implementation("org.ow2.asm:asm-commons:9.7.1")
++    implementation("org.ow2.asm:asm-commons:9.8")
 @@ -189,14 +_,14 @@
          val gitBranch = git.exec(providers, "rev-parse", "--abbrev-ref", "HEAD").get().trim()
          attributes(
