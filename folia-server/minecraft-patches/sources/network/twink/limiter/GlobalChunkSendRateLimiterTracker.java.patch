@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/network/twink/limiter/GlobalChunkSendRateLimiterTracker.java
-@@ -1,0 +_,65 @@
+@@ -1,0 +_,73 @@
 +package network.twink.limiter;
 +
 +import network.twink.limiter.yml.YMLParser;
@@ -30,16 +30,18 @@
 +        enabled = parser.getBoolean("enabled", false);
 +        limit = parser.getInt("global-chunk-send-rate-limit", 64);
 +        seconds = parser.getInt("per-seconds", 1);
-+        new Thread(() -> {
-+            while (true) {
-+                try {
-+                    Thread.sleep(seconds * 1000L);
-+                    current.set(0);
-+                } catch (InterruptedException e) {
-+                    //
++        if (enabled) {
++            new Thread(() -> {
++                while (true) {
++                    try {
++                        Thread.sleep(seconds * 1000L);
++                        current.set(0);
++                    } catch (InterruptedException e) {
++                        //
++                    }
 +                }
-+            }
-+        }).start();
++            }).start();
++        }
 +    }
 +
 +    private void setupConfig(File file) {
@@ -59,10 +61,16 @@
 +    }
 +
 +    public void incrementCurrent() {
++        if (!enabled) return;
 +        current.getAndIncrement();
 +    }
 +
 +    public boolean isOverLimit() {
++        if (!enabled) return false;
 +        return current.get() >= limit;
++    }
++
++    public boolean isEnabled() {
++        return enabled;
 +    }
 +}
